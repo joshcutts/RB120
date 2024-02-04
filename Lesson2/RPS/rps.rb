@@ -70,19 +70,24 @@ class Score
     end
   end
 
+  def player_score(player, spaces)
+    left_pad = (spaces.length / 2) - 1
+    name = player.name
+    score = value[name]
+    "#{spaces}| #{name}#{' ' * (left_pad - name.length)}| #{score} |"
+  end
+
+
   def generate_scoreboard
     spaces = ' ' * 28
     sep_line = '-' * 20
     half = (18 - "SCOREBOARD".length) / 2
-    h_name = @human.name
-    c_name = @computer.name
-    h_score = value[h_name]
-    c_score = value[c_name]
+    
     ["#{spaces}#{sep_line}",
      "#{spaces}|#{' ' * half}SCOREBOARD#{' ' * half}|",
      "#{spaces}#{sep_line}",
-     "#{spaces}| #{h_name}#{' ' * (13 - h_name.length)}| #{h_score} |",
-     "#{spaces}| #{c_name}#{' ' * (13 - c_name.length)}| #{c_score} |",
+     player_score(@human, spaces),
+     player_score(@computer, spaces),
      "#{spaces}#{sep_line}"]
   end
 
@@ -151,11 +156,11 @@ class Archive
 
   def create_xs(move)
     x_placements = {
-      "rock" => [1, "", "", "", ""],
-      "paper" => ["", 2, "", "", ""],
-      "scissors" => ["", "", 3, "", ""],
-      "lizard" => ["", "", "", 4, ""],
-      "spock" => ["", "", "", "", 5]
+      "rock" => ["X", "", "", "", ""],
+      "paper" => ["", "X", "", "", ""],
+      "scissors" => ["", "", "X", "", ""],
+      "lizard" => ["", "", "", "X", ""],
+      "spock" => ["", "", "", "", "X"]
     }
     x_placements[move]
   end
@@ -185,29 +190,25 @@ class Human < Player
   attr_reader :name
 
   def set_name
-    aquire_name_display_welcome
+    set_name_display_welcome
     @name = ""
     attempts = 0
     loop do
       @name = gets.chomp
-      break if valid_input?(@name)
-      @name = handle_invalid_input(@name, attempts)
-      break if name
+      break if (valid_input?(@name) || attempts >= 2)
+      handle_invalid_input(@name)
       attempts += 1
     end
-    @name
+    puts "Let's just call you 'Difficult' shall we?" if attempts >= 2
+    attempts >= 2 ? "Difficult" : @name
   end
 
   def set_name_display_welcome
     puts "First things first, what's your name?"
   end
 
-  def handle_invalid_input(name, attempts)
-    if attempts >= 2
-      puts %(Lets just call you "difficult" shall we?)
-      sleep(2)
-      "Difficult"
-    elsif name.empty?
+  def handle_invalid_input(name)
+    if name.empty?
       puts "You can't have a blank name! Please try again."
     elsif !valid_input?(name)
       puts "You can't trick me with spaces! Please enter a valid name."
@@ -233,7 +234,7 @@ class Human < Player
       break if Move::VALUES_AND_ABRV.include?(choice.downcase)
       puts "Sorry, invalid choice"
     end
-    self.move = Move.new(choice)
+    self.move = Move.new(choice.downcase)
   end
 end
 
@@ -373,14 +374,18 @@ class RPSGame
     archive.new_game
   end
 
+  def end_game
+    score.display_grand_winner
+    archive.grand_winner
+    display_archive
+    reset_for_next_game
+  end
+
   def play
     loop do
       round
       if grand_winner?
-        score.display_grand_winner
-        archive.grand_winner
-        display_archive
-        reset_for_next_game
+        end_game
         break unless play_again?
       end
     end
