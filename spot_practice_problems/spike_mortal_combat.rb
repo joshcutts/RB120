@@ -81,6 +81,7 @@ class Raiden < Fighter
     super
     @name = "Raiden"
     @appearance = "very large hat"
+    @entity = "God"
   end
   
   def special_move(other)
@@ -105,6 +106,7 @@ class Kitana < Fighter
     super
     @name = "Kitana"
     @appearance = "fans"
+    @entity = "Human"
   end
   
   def special_move(other)
@@ -129,6 +131,7 @@ class LiuKane < Fighter
     super
     @name = "Liu Kane"
     @appearance = "shirtless"
+    @entity = "Human"
   end
 
   def special_move(other)
@@ -153,6 +156,7 @@ class Jax < Fighter
     super
     @name = "Jax"
     @appearance = "metal arms"
+    @entity = "Human"
   end
 
   def special_move(other)
